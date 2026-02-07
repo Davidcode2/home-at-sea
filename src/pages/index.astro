@@ -102,7 +102,7 @@ const itineraryColors = [
             if (!itinerary || !itinerary.stops?.length) return null;
             return (
               <div>
-                <div class="flex items-center gap-3 mb-6">
+                <div class="flex justify-center items-center gap-3 mb-6">
                   <div class="w-1 h-8 rounded-full" style={`background-color: ${itineraryColors[index % itineraryColors.length]}`}></div>
                   <a href={`/ships/${ship.slug}`} class="group">
                     <h3 class="font-heading text-xl font-bold text-theme-primary group-hover:text-accent-primary transition-colors">
