@@ -72,7 +72,7 @@ export default function Globe({ stops, routeColor = "#C5A572" }: GlobeProps) {
     if (!globe) return;
 
     // Move camera closer so globe fills more of the container
-    globe.pointOfView({ altitude: 1.5 }, 0);
+    globe.pointOfView({ altitude: 1.7 }, 0);
 
     const controls = globe.controls();
     controls.autoRotate = true;
