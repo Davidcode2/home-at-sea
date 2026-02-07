@@ -152,7 +152,7 @@ const statusColors: Record<string, string> = {
 
     <!-- Itinerary -->
     {itinerary && itinerary.stops && itinerary.stops.length > 0 && (
-      <section class="py-16 bg-theme-secondary">
+      <section class="py-16 bg-theme-secondary overflow-x-clip">
         <div class="max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12">
           <h2 class="flex justify-center font-heading text-2xl font-bold text-theme-primary mb-8">Itinerary</h2>
           <ItinerarySection itinerary={itinerary} shipName={ship.name} />
