@@ -67,7 +67,7 @@ export default function Globe({ stops, routeColor = "#C5A572" }: GlobeProps) {
     [stops]
   );
 
-  useEffect(() => {
+  const handleGlobeReady = useCallback(() => {
     const globe = globeRef.current;
     if (!globe) return;
 
@@ -115,6 +115,7 @@ export default function Globe({ stops, routeColor = "#C5A572" }: GlobeProps) {
         bumpImageUrl="//cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png"
         arcsData={arcsData}
         arcColor={() => routeColor}
+        arcAltitude={0.1}
         arcStroke={0.5}
         arcDashLength={0.4}
         arcDashGap={0.2}
@@ -128,6 +129,8 @@ export default function Globe({ stops, routeColor = "#C5A572" }: GlobeProps) {
         labelColor={() => routeColor}
         labelResolution={2}
         labelAltitude={0.01}
+        onGlobeReady={handleGlobeReady}
+        onZoom={() => { }}
       />}
     </div>
   );
