@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState, useCallback } from "react";
 import GlobeGL from "react-globe.gl";
 import * as THREE from "three";
 
@@ -18,6 +18,28 @@ const CLOUDS_IMG_URL =
 
 export default function Globe({ stops, routeColor = "#C5A572" }: GlobeProps) {
   const globeRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  const measureContainer = useCallback(() => {
+    if (containerRef.current) {
+      const { width, height } = containerRef.current.getBoundingClientRect();
+      setSize((prev) =>
+        prev.width !== width || prev.height !== height
+          ? { width, height }
+          : prev
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    measureContainer();
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(measureContainer);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [measureContainer]);
 
   const arcsData = useMemo(() => {
     const arcs = [];
@@ -53,6 +75,11 @@ export default function Globe({ stops, routeColor = "#C5A572" }: GlobeProps) {
     controls.autoRotate = true;
     controls.autoRotateSpeed = 0.35;
     controls.enableZoom = false;
+    controls.minDistance = controls.getDistance();
+    controls.maxDistance = controls.getDistance();
+
+    // Move camera closer so globe fills more of the container
+    globe.pointOfView({ altitude: 1.5 });
 
     // Add clouds
     new THREE.TextureLoader().load(CLOUDS_IMG_URL, (cloudsTexture) => {
@@ -74,9 +101,11 @@ export default function Globe({ stops, routeColor = "#C5A572" }: GlobeProps) {
   }, []);
 
   return (
-    <div style={{ width: "100%", height: "100%" }}>
-      <GlobeGL
+    <div ref={containerRef} style={{ width: "100%", height: "100%" }}>
+      {size.width > 0 && size.height > 0 && <GlobeGL
         ref={globeRef}
+        width={size.width}
+        height={size.height}
         animateIn={false}
         backgroundColor="rgba(0,0,0,0)"
         globeImageUrl="//cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg"
@@ -96,7 +125,7 @@ export default function Globe({ stops, routeColor = "#C5A572" }: GlobeProps) {
         labelColor={() => routeColor}
         labelResolution={2}
         labelAltitude={0.01}
-      />
+      />}
     </div>
   );
 }
