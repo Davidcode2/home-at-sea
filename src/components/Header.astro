@@ -1,0 +1,43 @@
+---
+import ThemeToggle from "./ThemeToggle.astro";
+
+const currentPath = Astro.url.pathname;
+const navLinks = [
+  { href: "/", label: "Home" },
+  { href: "/stories", label: "Stories" },
+];
+---
+
+<header class="sticky top-0 z-50 bg-theme-secondary/80 backdrop-blur-md border-b border-theme">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <a href="/" class="flex items-center gap-2 group">
+        <svg class="w-8 h-8 text-accent-primary" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 22 C4 22 8 14 16 14 C24 14 28 22 28 22" />
+          <path d="M2 22 L30 22" />
+          <path d="M16 14 L16 6" />
+          <path d="M16 6 L22 10" />
+          <path d="M16 8 L20 11" />
+        </svg>
+        <span class="font-heading text-xl font-bold text-theme-primary group-hover:text-accent-primary transition-colors">
+          Home at Sea
+        </span>
+      </a>
+
+      <nav class="flex items-center gap-6">
+        {navLinks.map(({ href, label }) => (
+          <a
+            href={href}
+            class:list={[
+              "text-sm font-medium transition-colors hover:text-accent-primary",
+              currentPath === href ? "text-accent-primary" : "text-theme-secondary",
+            ]}
+          >
+            {label}
+          </a>
+        ))}
+        <ThemeToggle />
+      </nav>
+    </div>
+  </div>
+</header>

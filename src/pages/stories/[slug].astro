@@ -1,0 +1,86 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import { getStories, getStory } from "../../lib/strapi";
+
+export async function getStaticPaths() {
+  const stories = await getStories();
+  return stories.map((story) => ({
+    params: { slug: story.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const story = await getStory(slug!);
+
+if (!story) {
+  return Astro.redirect("/404");
+}
+---
+
+<Layout title={story.title} description={story.excerpt}>
+  <Header />
+  <main>
+    <!-- Hero -->
+    <section class="relative py-20 overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-b from-ocean-dark to-navy"></div>
+      <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <a href="/stories" class="inline-flex items-center gap-2 text-white/60 hover:text-gold mb-8 transition-colors text-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Stories
+        </a>
+        <h1 class="font-heading text-3xl sm:text-5xl font-bold text-white mb-6 leading-tight">
+          {story.title}
+        </h1>
+        <div class="flex items-center gap-4 text-white/70">
+          <span>By <strong class="text-gold">{story.author}</strong></span>
+          {story.ship && (
+            <>
+              <span class="text-white/30">|</span>
+              <a href={`/ships/${story.ship.slug}`} class="hover:text-gold transition-colors flex items-center gap-1">
+                <svg class="w-4 h-4" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 22 C4 22 8 14 16 14 C24 14 28 22 28 22" />
+                  <path d="M2 22 L30 22" />
+                </svg>
+                {story.ship.name}
+              </a>
+            </>
+          )}
+        </div>
+      </div>
+    </section>
+
+    <!-- Content -->
+    <section class="py-16 bg-theme-primary">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <article class="prose prose-lg max-w-none text-theme-secondary leading-relaxed whitespace-pre-line">
+          {story.content}
+        </article>
+      </div>
+    </section>
+
+    <!-- Back CTA -->
+    <section class="py-12 bg-theme-secondary border-t border-theme">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <a href="/stories" class="inline-flex items-center gap-2 text-accent-secondary hover:text-accent-primary transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M15 19l-7-7 7-7" />
+          </svg>
+          All Stories
+        </a>
+        {story.ship && (
+          <a href={`/ships/${story.ship.slug}`} class="inline-flex items-center gap-2 text-accent-secondary hover:text-accent-primary transition-colors">
+            View {story.ship.name}
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        )}
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Layout>

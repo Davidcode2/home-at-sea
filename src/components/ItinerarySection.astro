@@ -1,0 +1,39 @@
+---
+import type { Itinerary } from "../lib/strapi";
+import Globe from "./Globe.tsx";
+
+interface Props {
+  itinerary: Itinerary;
+  shipName: string;
+  color?: string;
+}
+
+const { itinerary, shipName, color = "#C5A572" } = Astro.props;
+
+const stops = (itinerary.stops || []).sort((a, b) => a.order - b.order);
+const globeStops = stops.map((s) => ({
+  name: s.name,
+  lat: s.latitude,
+  lng: s.longitude,
+}));
+---
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+  <div class="h-[500px] lg:h-[600px] overflow-hidden">
+    <Globe stops={globeStops} routeColor={color} client:only="react" />
+  </div>
+  <div>
+    <h3 class="font-heading text-2xl font-bold text-theme-primary mb-2">{itinerary.name}</h3>
+    <p class="text-theme-secondary mb-6 leading-relaxed">{itinerary.description}</p>
+    <div class="flex flex-wrap gap-2">
+      {stops.map((stop) => (
+        <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm bg-accent-primary/10 text-accent-primary border border-gold/20">
+          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="4" />
+          </svg>
+          {stop.name}
+        </span>
+      ))}
+    </div>
+  </div>
+</div>

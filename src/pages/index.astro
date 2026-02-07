@@ -1,17 +1,147 @@
 ---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import ShipCard from "../components/ShipCard.astro";
+import ItinerarySection from "../components/ItinerarySection.astro";
+import { getShips } from "../lib/strapi";
 
+const ships = await getShips();
+
+const itineraryColors = [
+  "#C5A572",
+  "#2D6A8F",
+  "#D4BA8A",
+  "#1B4965",
+  "#A68B5B",
+  "#0F2D3F",
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="Home">
+  <Header />
+  <main>
+    <!-- Hero Section -->
+    <section class="relative py-24 sm:py-32 overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-b from-ocean-dark via-navy to-navy-light"></div>
+      <div class="absolute inset-0 opacity-10">
+        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 25% 50%, rgba(197,165,114,0.15) 0%, transparent 50%), radial-gradient(circle at 75% 50%, rgba(27,73,101,0.2) 0%, transparent 50%);"></div>
+      </div>
+      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 border border-gold/20 mb-8">
+          <svg class="w-4 h-4 text-gold" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 22 C4 22 8 14 16 14 C24 14 28 22 28 22" />
+            <path d="M2 22 L30 22" />
+            <path d="M16 14 L16 6" />
+            <path d="M16 6 L22 10" />
+          </svg>
+          <span class="text-gold text-sm font-medium">Luxury Residential Ships</span>
+        </div>
+        <h1 class="font-heading text-4xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+          Your Home,<br />
+          <span class="text-gold">The Entire World</span>
+        </h1>
+        <p class="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto mb-10 leading-relaxed">
+          Discover extraordinary residential ships where luxury living meets continuous global exploration. Own your home at sea and wake up in a new destination.
+        </p>
+        <div class="flex items-center justify-center gap-4">
+          <a
+            href="#ships"
+            class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gold text-navy font-semibold hover:bg-gold-light transition-colors"
+          >
+            Explore Ships
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </a>
+          <a
+            href="/stories"
+            class="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white hover:border-gold/50 hover:text-gold transition-colors"
+          >
+            Read Stories
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ships Grid -->
+    <section id="ships" class="py-20 bg-theme-primary">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+        <div class="text-center">
+          <h2 class="font-heading text-3xl sm:text-4xl font-bold text-theme-primary mb-4">
+            Residential Ships
+          </h2>
+          <p class="text-theme-secondary max-w-2xl mx-auto">
+            From the pioneering The World to next-generation vessels under construction, explore the world's finest residential ships.
+          </p>
+        </div>
+      </div>
+      <div class="px-4 sm:px-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {ships.map((ship) => (
+            <ShipCard ship={ship} />
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Itineraries Section -->
+    <section class="py-20 bg-theme-secondary">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <h2 class="font-heading text-3xl sm:text-4xl font-bold text-theme-primary mb-4">
+            Global Itineraries
+          </h2>
+          <p class="text-theme-secondary max-w-2xl mx-auto">
+            Each ship charts its own course across the world's oceans. Explore the routes and destinations that await.
+          </p>
+        </div>
+        <div class="space-y-20">
+          {ships.map((ship, index) => {
+            const itinerary = ship.itineraries?.[0];
+            if (!itinerary || !itinerary.stops?.length) return null;
+            return (
+              <div>
+                <div class="flex items-center gap-3 mb-6">
+                  <div class="w-1 h-8 rounded-full" style={`background-color: ${itineraryColors[index % itineraryColors.length]}`}></div>
+                  <a href={`/ships/${ship.slug}`} class="group">
+                    <h3 class="font-heading text-xl font-bold text-theme-primary group-hover:text-accent-primary transition-colors">
+                      {ship.name}
+                    </h3>
+                  </a>
+                </div>
+                <ItinerarySection
+                  itinerary={itinerary}
+                  shipName={ship.name}
+                  color={itineraryColors[index % itineraryColors.length]}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gradient-to-r from-ocean-dark to-navy">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="font-heading text-3xl sm:text-4xl font-bold text-white mb-6">
+          Ready to Call the Ocean Home?
+        </h2>
+        <p class="text-white/70 text-lg mb-8 max-w-2xl mx-auto">
+          Read stories from residents who've made the leap, or explore the ships to find your perfect floating home.
+        </p>
+        <a
+          href="/stories"
+          class="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gold text-navy font-semibold text-lg hover:bg-gold-light transition-colors"
+        >
+          Discover Stories
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </a>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Layout>

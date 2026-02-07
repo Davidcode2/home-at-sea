@@ -1,0 +1,41 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="bg-theme-secondary border-t border-theme mt-auto">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div>
+        <div class="flex items-center gap-2 mb-4">
+          <svg class="w-6 h-6 text-accent-primary" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 22 C4 22 8 14 16 14 C24 14 28 22 28 22" />
+            <path d="M2 22 L30 22" />
+            <path d="M16 14 L16 6" />
+            <path d="M16 6 L22 10" />
+            <path d="M16 8 L20 11" />
+          </svg>
+          <span class="font-heading text-lg font-bold text-theme-primary">Home at Sea</span>
+        </div>
+        <p class="text-theme-secondary text-sm leading-relaxed">
+          Your guide to luxury residential ships. Discover a life of continuous global exploration from the comfort of your own home at sea.
+        </p>
+      </div>
+      <div>
+        <h3 class="font-heading font-bold text-theme-primary mb-4">Explore</h3>
+        <ul class="space-y-2 text-sm">
+          <li><a href="/" class="text-theme-secondary hover:text-accent-primary transition-colors">Ships</a></li>
+          <li><a href="/stories" class="text-theme-secondary hover:text-accent-primary transition-colors">Stories</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-heading font-bold text-theme-primary mb-4">Information</h3>
+        <p class="text-theme-secondary text-sm leading-relaxed">
+          This is an informational showcase of residential ships currently operational, under construction, or in planning stages worldwide.
+        </p>
+      </div>
+    </div>
+    <div class="border-t border-theme mt-8 pt-8 text-center text-sm text-theme-muted">
+      &copy; {year} Home at Sea. All rights reserved.
+    </div>
+  </div>
+</footer>

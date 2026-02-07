@@ -1,0 +1,45 @@
+---
+import type { Apartment } from "../lib/strapi";
+import { formatPrice, formatApartmentType } from "../lib/strapi";
+
+interface Props {
+  apartments: Apartment[];
+}
+
+const { apartments } = Astro.props;
+---
+
+<div class="overflow-x-auto">
+  <table class="w-full text-left">
+    <thead>
+      <tr class="border-b border-theme">
+        <th class="py-4 px-4 text-xs uppercase tracking-wider text-theme-muted font-semibold">Residence</th>
+        <th class="py-4 px-4 text-xs uppercase tracking-wider text-theme-muted font-semibold">Type</th>
+        <th class="py-4 px-4 text-xs uppercase tracking-wider text-theme-muted font-semibold">Size (m²)</th>
+        <th class="py-4 px-4 text-xs uppercase tracking-wider text-theme-muted font-semibold">Price Range</th>
+        <th class="py-4 px-4 text-xs uppercase tracking-wider text-theme-muted font-semibold">Monthly Fees</th>
+      </tr>
+    </thead>
+    <tbody>
+      {apartments.map((apt, i) => (
+        <tr class:list={["border-b border-theme hover:bg-theme-primary/30 transition-colors", i % 2 === 0 ? "bg-theme-card" : ""]}>
+          <td class="py-4 px-4">
+            <span class="font-medium text-theme-primary">{apt.name}</span>
+          </td>
+          <td class="py-4 px-4">
+            <span class="inline-block px-2 py-1 text-xs rounded-full bg-accent-secondary/10 text-accent-secondary font-medium">
+              {formatApartmentType(apt.type)}
+            </span>
+          </td>
+          <td class="py-4 px-4 text-theme-secondary">{apt.size}</td>
+          <td class="py-4 px-4">
+            <span class="text-accent-primary font-semibold">{formatPrice(apt.priceFrom)}</span>
+            <span class="text-theme-muted mx-1">–</span>
+            <span class="text-accent-primary font-semibold">{formatPrice(apt.priceTo)}</span>
+          </td>
+          <td class="py-4 px-4 text-theme-secondary">${apt.monthlyFees.toLocaleString()}/mo</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
