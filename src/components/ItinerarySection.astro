@@ -18,11 +18,11 @@ const globeStops = stops.map((s) => ({
 }));
 ---
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-  <div class="h-[500px] lg:h-[700px] overflow-hidden">
+<div class="grid grid-cols-1 lg:grid-cols-2 items-center overflow-hidden">
+  <div class="h-[400px] lg:h-[550px] 2xl:h-[700px]">
     <Globe stops={globeStops} routeColor={color} client:only="react" />
   </div>
-  <div>
+  <div class="relative z-10 lg:-ml-12 bg-theme-secondary rounded-2xl p-8 shadow-[0_4px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_4px_40px_rgba(0,0,0,0.5)]">
     <h3 class="font-heading text-2xl font-bold text-theme-primary mb-2">{itinerary.name}</h3>
     <p class="text-theme-secondary mb-6 leading-relaxed">{itinerary.description}</p>
     <div class="flex flex-wrap gap-2">
