@@ -71,15 +71,18 @@ export default function Globe({ stops, routeColor = "#C5A572" }: GlobeProps) {
     const globe = globeRef.current;
     if (!globe) return;
 
+    // Move camera closer so globe fills more of the container
+    globe.pointOfView({ altitude: 1.5 }, 0);
+
     const controls = globe.controls();
     controls.autoRotate = true;
     controls.autoRotateSpeed = 0.35;
     controls.enableZoom = false;
-    controls.minDistance = controls.getDistance();
-    controls.maxDistance = controls.getDistance();
 
-    // Move camera closer so globe fills more of the container
-    globe.pointOfView({ altitude: 1.5 });
+    // Block wheel events on the canvas to fully prevent zoom
+    const renderer = globe.renderer();
+    const canvas = renderer.domElement;
+    canvas.addEventListener("wheel", (e: Event) => e.preventDefault(), { passive: false });
 
     // Add clouds
     new THREE.TextureLoader().load(CLOUDS_IMG_URL, (cloudsTexture) => {
