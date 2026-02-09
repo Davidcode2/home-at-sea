@@ -11,44 +11,119 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  build-and-push:
+  check-for-changes:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      packages: write
-
+    outputs:
+      src: ${{ steps.filter.outputs.src }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+      - name: Check for relevant changes
+        id: filter
+        uses: dorny/paths-filter@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          filters: |
+            src:
+              - 'src/**'
+              - 'src/'
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
+  bump-version:
+    runs-on: ubuntu-latest
+    needs: check-for-changes
+    if: needs.check-for-changes.outputs.src == 'true' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+      sha: ${{ steps.push.outputs.sha }}
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
         with:
-          images: ghcr.io/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=sha,prefix=sha-,enable=true
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Davidcode2
+          repositories: home-at-sea,app-of-apps
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            STRAPI_URL=https://api.homeatsea.jakob-lingel.dev
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Bump patch version in package.json
+        id: bump
+        run: |
+          CURRENT=$(jq -r .version package.json)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
+          jq --arg v "$NEW_VERSION" '.version = $v' package.json > tmp.json && mv tmp.json package.json
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Bumped version: $CURRENT → $NEW_VERSION"
+
+      - name: Commit version bump
+        id: push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.version }} [skip ci]"
+          git push
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  build-and-push:
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/build-and-push.yml
+    needs: bump-version
+    with:
+      image_name: ghcr.io/${{ github.repository }}
+      dockerfile: dockerfile
+      ref: ${{ needs.bump-version.outputs.sha }}
+      build_args: |
+        SKIP_BUILD_STATIC_GENERATION=false
+        STRAPI_URL=https://api.homeatsea.jakob-lingel.dev
+    secrets: inherit
+
+  deploy-app:
+    runs-on: ubuntu-latest
+    needs: [bump-version, build-and-push]
+    permissions:
+      contents: read
+    env:
+      VERSION: ${{ needs.bump-version.outputs.version }}
+
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Davidcode2
+          repositories: app-of-apps
+
+      - name: Checkout app-of-apps repo
+        uses: actions/checkout@v4
+        with:
+          repository: Davidcode2/app-of-apps
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Update deployment image tag
+        working-directory: home-at-sea
+        run: |
+          DEPLOY_FILE="frontend-deployment.yaml"
+          sed -i "s|image: ghcr.io/davidcode2/home-at-sea:.*|image: ghcr.io/davidcode2/home-at-sea:${VERSION}|g" "$DEPLOY_FILE"
+          echo "Updated image tag to ${VERSION}"
+
+      - name: Commit and push deployment changes
+        working-directory: home-at-sea
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git diff --exit-code && echo "No changes to commit" && exit 0
+          git add .
+          git commit -m "deploy: home-at-sea website v${VERSION}"
+          git push
