@@ -137,7 +137,9 @@ jobs:
       - name: Update deployment image tag
         working-directory: ${{ env.DEPLOYMENT_DIR }}
         run: |
-          sed -i "s|image: ghcr.io/${{ env.GITHUB_OWNER }}/${{ env.APP_REPO_NAME }}:.*|image: ghcr.io/${{ env.GITHUB_OWNER }}/${{ env.APP_REPO_NAME }}:${VERSION}|g" "${{ env.DEPLOYMENT_FILE }}"
+          OWNER_LC=$(echo "${{ env.GITHUB_OWNER }}" | tr '[:upper:]' '[:lower:]')
+          REPO_LC=$(echo "${{ env.APP_REPO_NAME }}" | tr '[:upper:]' '[:lower:]')
+          sed -i "s|image: ghcr.io/${OWNER_LC}/${REPO_LC}:.*|image: ghcr.io/${OWNER_LC}/${REPO_LC}:${VERSION}|g" "${{ env.DEPLOYMENT_FILE }}"
           echo "Updated image tag to ${VERSION}"
 
       - name: Commit and push deployment changes
