@@ -1,4 +1,4 @@
-name: Build and Push Frontend Image
+name: Build and Deploy Frontend
 
 on:
   workflow_dispatch:
@@ -7,6 +7,20 @@ on:
       - main
 
 env:
+  # Repository configuration
+  GITHUB_OWNER: Davidcode2
+  APP_REPO_NAME: home-at-sea
+  APP_OF_APPS_REPO: app-of-apps
+
+  # Deployment configuration
+  DEPLOYMENT_DIR: home-at-sea
+  DEPLOYMENT_FILE: frontend-deployment.yaml
+
+  # Build configuration
+  DOCKERFILE: Dockerfile
+  STRAPI_URL: https://api.homeatsea.jakob-lingel.dev
+
+  # Image configuration
   IMAGE_NAME: ${{ github.repository }}
   REGISTRY: ghcr.io
 
@@ -26,7 +40,6 @@ jobs:
           filters: |
             src:
               - 'src/**'
-              - 'src/'
 
   bump-version:
     runs-on: ubuntu-latest
@@ -44,8 +57,8 @@ jobs:
         with:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
-          owner: Davidcode2
-          repositories: home-at-sea,app-of-apps
+          owner: ${{ env.GITHUB_OWNER }}
+          repositories: ${{ env.APP_REPO_NAME }},${{ env.APP_OF_APPS_REPO }}
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -76,15 +89,15 @@ jobs:
     permissions:
       contents: read
       packages: write
-    uses: ./.github/workflows/build-and-push.yml
+    uses: ./.github/workflows/build-and-push.yaml
     needs: bump-version
     with:
       image_name: ghcr.io/${{ github.repository }}
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
       ref: ${{ needs.bump-version.outputs.sha }}
       build_args: |
         SKIP_BUILD_STATIC_GENERATION=false
-        STRAPI_URL=https://api.homeatsea.jakob-lingel.dev
+        STRAPI_URL=${{ env.STRAPI_URL }}
     secrets: inherit
 
   deploy-app:
@@ -102,28 +115,27 @@ jobs:
         with:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
-          owner: Davidcode2
-          repositories: app-of-apps
+          owner: ${{ env.GITHUB_OWNER }}
+          repositories: ${{ env.APP_OF_APPS_REPO }}
 
       - name: Checkout app-of-apps repo
         uses: actions/checkout@v4
         with:
-          repository: Davidcode2/app-of-apps
+          repository: ${{ env.GITHUB_OWNER }}/${{ env.APP_OF_APPS_REPO }}
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Update deployment image tag
-        working-directory: home-at-sea
+        working-directory: ${{ env.DEPLOYMENT_DIR }}
         run: |
-          DEPLOY_FILE="frontend-deployment.yaml"
-          sed -i "s|image: ghcr.io/davidcode2/home-at-sea:.*|image: ghcr.io/davidcode2/home-at-sea:${VERSION}|g" "$DEPLOY_FILE"
+          sed -i "s|image: ghcr.io/${{ env.GITHUB_OWNER }}/${{ env.APP_REPO_NAME }}:.*|image: ghcr.io/${{ env.GITHUB_OWNER }}/${{ env.APP_REPO_NAME }}:${VERSION}|g" "${{ env.DEPLOYMENT_FILE }}"
           echo "Updated image tag to ${VERSION}"
 
       - name: Commit and push deployment changes
-        working-directory: home-at-sea
+        working-directory: ${{ env.DEPLOYMENT_DIR }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git diff --exit-code && echo "No changes to commit" && exit 0
           git add .
-          git commit -m "deploy: home-at-sea website v${VERSION}"
+          git commit -m "deploy: ${{ env.APP_REPO_NAME }} frontend v${VERSION}"
           git push
