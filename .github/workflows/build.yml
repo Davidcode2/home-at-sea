@@ -107,7 +107,7 @@ jobs:
       ref: ${{ needs.bump-version.outputs.sha }}
       build_args: |
         SKIP_BUILD_STATIC_GENERATION=false
-        STRAPI_URL=${{ env.STRAPI_URL }}
+        STRAPI_URL=https://api.homeatsea.jakob-lingel.dev
     secrets: inherit
 
   deploy-app:
