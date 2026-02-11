@@ -16,7 +16,18 @@ interface GlobeProps {
 const CLOUDS_IMG_URL =
   "https://raw.githubusercontent.com/turban/webgl-earth/master/images/fair_clouds_4k.png";
 
-export default function Globe({ stops, routeColor = "#C5A572" }: GlobeProps) {
+/* Route color palette - gold variations for visibility on globe */
+const ROUTE_COLORS = [
+  "#D4B896", // --color-route-pale: bright gold for dark backgrounds
+  "#E5C07B", // --color-route-bright: vivid gold
+  "#D4AF37", // --color-route-vivid: classic gold
+  "#C5A572", // --color-route-primary: warm gold
+  "#B8944F", // --color-route-deep: deeper gold
+];
+
+const LABEL_COLOR = "#D4B896"; // Pale gold for labels (high contrast)
+
+export default function Globe({ stops, routeColor }: GlobeProps) {
   const globeRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -114,7 +125,7 @@ export default function Globe({ stops, routeColor = "#C5A572" }: GlobeProps) {
         globeImageUrl="//cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg"
         bumpImageUrl="//cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png"
         arcsData={arcsData}
-        arcColor={() => routeColor}
+        arcColor={(d: object, i: number) => routeColor || ROUTE_COLORS[i % ROUTE_COLORS.length]}
         arcAltitude={0.1}
         arcStroke={0.5}
         arcDashLength={0.4}
@@ -126,7 +137,7 @@ export default function Globe({ stops, routeColor = "#C5A572" }: GlobeProps) {
         labelText="text"
         labelSize={1.2}
         labelDotRadius={0.4}
-        labelColor={() => routeColor}
+        labelColor={() => LABEL_COLOR}
         labelResolution={2}
         labelAltitude={0.01}
         onGlobeReady={handleGlobeReady}

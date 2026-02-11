@@ -19,6 +19,13 @@
   --color-navy-light: #162544;
   --color-cream: #FAF8F5;
   --color-cream-dark: #EDE8E0;
+
+  /* Route colors - Gold variations in HSL for globe routes */
+  --color-route-primary: hsl(38 42% 61%);     /* Base gold */
+  --color-route-bright: hsl(38 60% 68%);      /* Brighter gold for visibility */
+  --color-route-vivid: hsl(40 65% 62%);       /* More saturated gold */
+  --color-route-pale: hsl(36 35% 70%);        /* Lighter pale gold */
+  --color-route-deep: hsl(35 45% 55%);        /* Deeper gold for contrast */
 }
 
 /* Base styles */
